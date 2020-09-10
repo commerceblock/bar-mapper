@@ -1,0 +1,61 @@
+
+
+
+
+
+html, body
+{
+	width: 100%;
+	margin: 0;
+	background-color: white;
+	color: #4040c0;
+	font-size: 14pt;
+	font-family: sans-serif;
+}
+
+input, button, td
+{
+	font-size: 10pt;
+}
+
+input#dgld_address
+{
+	min-width:500pt;
+}
+
+input[type='button']
+{
+	color: #4040c0;
+	font-size: 14pt;
+	font-family: sans-serif;
+	border:2px solid black;
+}
+
+head
+{
+	display: none;
+}
+
+#main
+{
+	margin-top: 200px;
+	margin-left: 200px;
+	margin-right: 200px;
+}
+
+table
+{
+	width: 100%;
+}
+
+td
+{
+	width: 100%;
+	border: 1px solid black;
+	padding: 4px 4px 4px 4px;
+}
+
+#error_message
+{
+	color:red;
+}

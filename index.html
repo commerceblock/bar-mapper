@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta charset="utf-8"/>
+ <title>Bar mapper</title>
+ <link rel="stylesheet" type="text/css" href="/style.css"/>
+ <script type="text/javascript" src="/brython.js"/>
+ <script type="text/javascript" src="/brython_stdlib.js"/>
+ <script type="text/python" src="/client.py"/>
+</head>
+<body onload="brython()">
+ <form id="main">
+  bridge DGLD address: <input id="dgld_address" type="text" value="gDxdzHvfK2a9ARMQQASJqCQ9K47SNUeiot"/> <input id="get_mapping" type="button" value="get mapping"/> <br/>
+ </form>
+ <div id="error_message"/>
+ <table id="bar_mapping"/>
+</body>
+</html>
