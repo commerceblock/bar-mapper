@@ -2,106 +2,76 @@
 #-*- coding:utf8 -*-
 
 from web3 import Web3
-from solc import compile_source, install_solc, get_solc_version_string
+from solcx import compile_source, install_solc, get_solc_version, set_solc_version
 from pathlib import Path
-import os
-
-
-try:
-	os.environ['SOLC_BINARY'] = str(Path.home() / '.py-solc/solc-v0.4.25/bin/solc')
-	assert get_solc_version_string().startswith('Version: 0.4.25+')
-except (AssertionError, FileNotFoundError):
-	install_solc('v0.4.25')
-
-assert get_solc_version_string().startswith('Version: 0.4.25+')
-
-
-w3 = Web3(Web3.HTTPProvider('https://ropsten.infura.io/v3/11ed32ed8b7947498852e4195a4495b2'))
-
-assert w3.isConnected()
-
-
-print(w3.eth.blockNumber)
-
-
-compiled_sol = compile_source(Path('dgld-smart-contracts/contracts/wrapped-DGLD.sol').read_text(), import_remappings=['=./dgld-smart-contracts/node_modules/', '-'])
-contract_id, contract_interface = compiled_sol.popitem()
-
-wdgld_contract_address = '0x123151402076fc819b7564510989e475c9cd93ca'
-
-contract = w3.eth.contract(address=wdgld_contract_address, abi=contract_interface["abi"])
-
-print(contract.functions.balanceOf('0xe0238da09cab56b3066f26f98657dcce801c16b9').call())
-
-#address = deploy_contract(w3, contract_interface)
-#print(f'Deployed {contract_id} to: {address}\n')
-
-
-
-
-
-
-'''
+from time import time
 from collections import defaultdict
-from decimal import Decimal
-import os
-
-import requests
 
 
-INFURA_KEY = '11ed32ed8b7947498852e4195a4495b2'
+# install the right solc version
+REQUIRED_SOLC_VERSION = '0.5.16' # solc version required by the contract source and openzeppelin headers
+try:
+	if str(get_solc_version()) != REQUIRED_SOLC_VERSION:
+		set_solc_version(REQUIRED_SOLC_VERSION)
+except SolcNotInstalled:
+	install_solc(REQUIRED_SOLC_VERSION)
+	set_solc_version(REQUIRED_SOLC_VERSION)
+assert str(get_solc_version()) == REQUIRED_SOLC_VERSION, f"Wrong solc version: {str(get_solc_version())} instead of required {REQUIRED_SOLC_VERSION}."
 
 
-def get_rpc_response(method, params=[]):
-    url = "https://mainnet.infura.io/{}".format(INFURA_KEY)
-    params = params or []
-    data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
-    headers = {"Content-Type": "application/json"}
-    response = requests.post(url, headers=headers, json=data)
-    return response.json()
+# compile wDLGD contract
+wdgld_compiled_sol = compile_source(Path('dgld-smart-contracts/contracts/wrapped-DGLD.sol').read_text(), import_remappings=['openzeppelin-solidity/=./dgld-smart-contracts/node_modules/openzeppelin-solidity/', '-'])
+wdgld_contract_id, wdgld_contract_interface = wdgld_compiled_sol.popitem()
 
 
-def get_contract_transfers(address, decimals=18, from_block=None):
-    """Get logs of Transfer events of a contract"""
-    from_block = from_block or "0x0"
-    transfer_hash = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-    params = [{"address": address, "fromBlock": from_block, "topics": [transfer_hash]}]
-    logs = get_rpc_response("eth_getLogs", params)
-    from pprint import pprint as pp
-    pp(logs)
-    logs = logs['result']
-    decimals_factor = Decimal("10") ** Decimal("-{}".format(decimals))
-    for log in logs:
-        log["amount"] = Decimal(str(int(log["data"], 16))) * decimals_factor
-        log["from"] = log["topics"][1][0:2] + log["topics"][1][26:]
-        log["to"] = log["topics"][2][0:2] + log["topics"][2][26:]
-    return logs
+# connect to Infura
+PROVIDER_URL = 'https://mainnet.infura.io/v3/11ed32ed8b7947498852e4195a4495b2'
+w3 = Web3(Web3.HTTPProvider(PROVIDER_URL))
+assert w3.isConnected(), "Not connected to Infura."
+
+if __debug__:
+	expected_block_number = (time() - 1599746465 + 10834409 * 10) / 10 # approximate expected Ethereum block number
+assert 1.1 * expected_block_number >= w3.eth.blockNumber  >= 0.9 * expected_block_number, f"Sanity check failed: Ethereum block number ({w3.eth.blockNumber}) must be +-10% of the expected value {expected_block_number}, assuming 10s block creation time."
 
 
-def get_balances(transfers):
-    balances = defaultdict(Decimal)
-    for t in transfers:
-        balances[t["from"]] -= t["amount"]
-        balances[t["to"]] += t["amount"]
-    bottom_limit = Decimal("0.00000000001")
-    balances = {k: balances[k] for k in balances if balances[k] > bottom_limit}
-    return balances
+# request contract
+WDGLD_CONTRACT_ADDRESS = Web3.toChecksumAddress('0x123151402076fc819b7564510989e475c9cd93ca')
+wdgld_contract = w3.eth.contract(address=WDGLD_CONTRACT_ADDRESS, abi=wdgld_contract_interface['abi'])
+assert wdgld_contract.functions.name().call() == 'wrapped-DGLD', "Sanity check failed: The requested contract name is not 'wrapped-DGLD'."
 
+# balances
+ISSUE_ADDRESS = '0x0000000000000000000000000000000000000000'
+PEGOUT_ADDRESS = '0x00000000000000000000000000000000009ddEAd'
+balances_block = 10379499 # contract creation block number
+balances = defaultdict(lambda: 0)
 
-def get_balances_list(transfers):
-    balances = get_balances(transfers)
-    balances = [{"address": a, "amount": b} for a, b in balances.items()]
-    balances = sorted(balances, key=lambda b: -abs(b["amount"]))
-    return balances
+def update_balances():
+	global balances, balances_block
+	
+	# get transfer list
+	current_block = w3.eth.blockNumber
+	transfers = wdgld_contract.events.Transfer.getLogs(fromBlock=balances_block)
+	balances_block = current_block
+	
+	if __debug__:
+		total_supply = wdgld_contract.functions.totalSupply().call()
+	
+	# calculate balances from transfers
+	for transfer in transfers:
+		from_address = transfer['args']['from']
+		to_address = transfer['args']['to']
+		value = transfer['args']['value']
+		#print(from_address, to_address, value)
+		balances[from_address] -= value
+		balances[to_address] += value
+		
+		assert total_supply >= -balances[ISSUE_ADDRESS], "Sanity check failed: Total coin supply doesn't match the value derived from transfer listing."
 
 
 if __name__ == '__main__':
-	address = '0xa74476443119A942dE498590Fe1f2454d7D4aC0d'
-	transfers = get_contract_transfers(address)
-	balances = get_balances(transfers)
-	print(balances)
-
-'''
-
-
+	update_balances()
+	
+	for addr, value in balances.items():
+		if value > 0:
+			print(addr, value)
 
