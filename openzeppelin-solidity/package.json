@@ -1,0 +1,132 @@
+{
+  "_args": [
+    [
+      "openzeppelin-solidity@2.5.0",
+      "/home/bartek/Projekty/commerceblock/bar-mapper/dgld-smart-contracts"
+    ]
+  ],
+  "_from": "openzeppelin-solidity@2.5.0",
+  "_hasShrinkwrap": false,
+  "_id": "openzeppelin-solidity@2.5.0",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/openzeppelin-solidity",
+  "_nodeVersion": "10.16.3",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/openzeppelin-solidity_2.5.0_1580855772036_0.6013233371666862"
+  },
+  "_npmUser": {
+    "email": "nicolas.venturo@gmail.com",
+    "name": "nventuro"
+  },
+  "_npmVersion": "6.12.0",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "openzeppelin-solidity",
+    "raw": "openzeppelin-solidity@2.5.0",
+    "rawSpec": "2.5.0",
+    "scope": null,
+    "spec": "2.5.0",
+    "type": "version"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/openzeppelin-solidity/-/openzeppelin-solidity-2.5.0.tgz",
+  "_shasum": "829a9bcfc928619dd96c44bd893b180044ff51aa",
+  "_shrinkwrap": null,
+  "_spec": "openzeppelin-solidity@2.5.0",
+  "_where": "/home/bartek/Projekty/commerceblock/bar-mapper/dgld-smart-contracts",
+  "author": {
+    "email": "maintainers@openzeppelin.org",
+    "name": "OpenZeppelin Community"
+  },
+  "bugs": {
+    "url": "https://github.com/OpenZeppelin/openzeppelin-contracts/issues"
+  },
+  "dependencies": {},
+  "description": "Secure Smart Contract library for Solidity",
+  "devDependencies": {
+    "@openzeppelin/cli": "^2.5.3",
+    "@openzeppelin/gsn-helpers": "^0.2.3",
+    "@openzeppelin/gsn-provider": "^0.1.9",
+    "@openzeppelin/test-environment": "^0.1.2",
+    "@openzeppelin/test-helpers": "^0.5.4",
+    "chai": "^4.2.0",
+    "eslint": "^6.5.1",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-mocha-no-only": "^1.1.0",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "ethereumjs-util": "^6.2.0",
+    "ganache-core-coverage": "https://github.com/OpenZeppelin/ganache-core-coverage/releases/download/2.5.3-coverage/ganache-core-coverage-2.5.3.tgz",
+    "lodash.startcase": "^4.4.0",
+    "micromatch": "^4.0.2",
+    "mocha": "^7.0.0",
+    "openzeppelin-docs-utils": "github:openzeppelin/docs-utils",
+    "solhint": "2.3.0",
+    "solidity-coverage": "github:rotcivegaf/solidity-coverage#5875f5b7bc74d447f3312c9c0e9fc7814b482477",
+    "solidity-docgen": "^0.3.13"
+  },
+  "directories": {},
+  "dist": {
+    "fileCount": 425,
+    "integrity": "sha512-I0yRC3nff9Kn2LDWuz02fuw0EuomVQ9Z8lHzdqh8P9BiOUzIk8frQRxn/a1Kva3StF6hwPP+Dh3/SQ2ily1Pow==",
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJeOfHcCRA9TVsSAnZWagAAEYwQAJvyJQoUvbZASzmZe6mC\nDaMUu0bIAV9nF1AKnVURkCYCmQF65vYwxMtjoopY1CRV1Za6DZ8o0XXiTPR6\nm9lRHKFL7lTNQdNPP7LUhKWsvM5rtX7KRvmPBQDaNHLB51YUoKf8x0R2N5kC\nlnacPZX3WJhxeaIRU3dtm0pXx+Mps6geMLkJDu6AOPv1GlEiJajuAWLVFF3j\nYy7AxdbmbnmxnabRoH/NbhLwyA9ft3VFTUXMnsD05+ifh1x2miEHf0qBPhPi\n9FccsaXFFct01G9RMn29Jz9e3dGdtDHKk07RPkHaU6gW7pufsbf67E9LbuTv\nKfRugZRqt824SF4rKgNXd3geP6z5wOpoqv8CY/Y/eBU5ILRVGWh+aNh22GZr\n+7AGNjPpx/yDLU/Yo6RC/pmAj+xDwl8yjMqvRnlosyGUfobxSH/Otc0C+RkG\navM54QhCCG8yDMGVquAtB8ARzrf+duAWJnWckD5Lin3Zk8QGrLv+o+spwZaD\ngmokXcSgADspTCbaocUrP7AyYBBOfu28afb27am03vfgooMLgUfomPdzJHWP\neIkraaWG7YaA/x/QIVsnI7TR1n4qHmappNtsxYRkT8SXcOMfERnA1bkvqMTZ\nNqd5HePy5jLEXm7uxEWWTraD8hkIA61pD/rWRlEslKll9HUuuqbUnYZ6aNg4\nGYUO\r\n=uZff\r\n-----END PGP SIGNATURE-----\r\n",
+    "shasum": "829a9bcfc928619dd96c44bd893b180044ff51aa",
+    "tarball": "https://registry.npmjs.org/openzeppelin-solidity/-/openzeppelin-solidity-2.5.0.tgz",
+    "unpackedSize": 22467780
+  },
+  "gitHead": "e9d7c59f81f5869111fbbd19b94100106a4f1d1b",
+  "homepage": "https://openzeppelin.com/contracts/",
+  "keywords": [
+    "contracts",
+    "ethereum",
+    "security",
+    "smart",
+    "solidity",
+    "zeppelin"
+  ],
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "facuspagnuolo",
+      "email": "facundo_spagnuolo@icloud.com"
+    },
+    {
+      "name": "frangio",
+      "email": "frangio.1@gmail.com"
+    },
+    {
+      "name": "maraoz",
+      "email": "manuelaraoz@gmail.com"
+    }
+  ],
+  "name": "openzeppelin-solidity",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenZeppelin/openzeppelin-contracts.git"
+  },
+  "scripts": {
+    "compile": "scripts/compile.sh",
+    "coverage": "scripts/coverage.sh",
+    "docs": "oz-docs -c docs",
+    "docs:watch": "npm run docs watch contracts 'docs/*.hbs'",
+    "lint": "npm run lint:js && npm run lint:sol",
+    "lint:fix": "npm run lint:js:fix",
+    "lint:js": "eslint --ignore-path .gitignore .",
+    "lint:js:fix": "eslint --ignore-path .gitignore . --fix",
+    "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
+    "prepare": "node scripts/prepare.js",
+    "prepare-docs": "scripts/prepare-docs.sh",
+    "release": "scripts/release/release.sh",
+    "test": "mocha --exit --recursive test",
+    "version": "scripts/release/version.sh"
+  },
+  "version": "2.5.0"
+}

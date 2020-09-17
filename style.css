@@ -18,7 +18,7 @@ input, button, td
 	font-size: 10pt;
 }
 
-input#dgld_address
+input#eth_address
 {
 	min-width:500pt;
 }
@@ -45,12 +45,11 @@ head
 
 table
 {
-	width: 100%;
+	width: 80%;
 }
 
 td
 {
-	width: 100%;
 	border: 1px solid black;
 	padding: 4px 4px 4px 4px;
 }

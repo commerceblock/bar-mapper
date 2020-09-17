@@ -10,10 +10,23 @@
  <script type="text/python" src="/client.py"/>
 </head>
 <body onload="brython()">
+
+ <h1>Assets in ethbridge</h1>
+ <div id="locked_assets"/>
+
+ <h1>ETH holders</h1>
+ <div id="eth_balances"/>
+
+ <h1><a name="mapping_table">Assets owned by address</a></h1>
  <form id="main">
-  bridge DGLD address: <input id="dgld_address" type="text" value="gDxdzHvfK2a9ARMQQASJqCQ9K47SNUeiot"/> <input id="get_mapping" type="button" value="get mapping"/> <br/>
+  enter ETH address: <input id="eth_address" type="text"/> <input id="get_assets" type="button" value="get assets" width="50%"/> <br/>
  </form>
- <div id="error_message"/>
- <table id="bar_mapping"/>
+ <div id="bar_mapping"/>
+ 
+ <br/>
+ <br/>
+ <br/>
+ <br/>
+
 </body>
 </html>
