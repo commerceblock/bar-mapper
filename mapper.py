@@ -25,7 +25,9 @@ mime_javascript = [('Content-Type', 'application/javascript;charset=utf-8'), ('C
 
 app = Flask('bar_mapper')
 
-
+DEBUG_FLAG = False
+WSGI_PORT = 5000
+WSGI_IP = '127.0.0.1'
 REQUIRED_SOLC_VERSION = '0.5.16' # solc version required by the contract source and openzeppelin headers
 PROVIDER_URLS = ['https://mainnet.infura.io/v3/11ed32ed8b7947498852e4195a4495b2'] # list of Eth RPC nodes (may be more than 1)
 WDGLD_CONTRACT_ADDRESS = Web3.toChecksumAddress('0x123151402076fc819b7564510989e475c9cd93ca') # wDGLD contract address
@@ -375,12 +377,12 @@ def eth_bar(eth):
 
 
 @app.route('/eth-balances')
-def eth_balances():
+def eth_balances_feed():
 	return json.dumps(dict((_k, {'value':_v}) for (_k, _v) in eth_balances.items())), 200, mime_json
 
 
 @app.route('/locked-assets')
-def locked_assets():
+def locked_assets_feed():
 	return json.dumps(dict((_k, {'value':_v}) for (_k, _v) in locked_assets.items())), 200, mime_json
 
 
@@ -482,11 +484,6 @@ def locked_assets_updater(locked_assets):
 if __name__ == '__main__':
 	from multiprocessing import Process, Manager
 	
-	import sys
-	import ssl
-	from gevent import pywsgi
-	from geventwebsocket.handler import WebSocketHandler
-	
 	with Manager() as manager:
 		# proxy objects to share state between processes
 		asset_map = manager.dict()
@@ -502,36 +499,10 @@ if __name__ == '__main__':
 		eth_balances_proc.start()
 		locked_assets_proc.start()
 		
-		# start the WSGI server
-		port = 5000
-		ip = '127.0.0.1'
-		
-		### http, development
 		try:
-			app.run(host=ip, port=port, debug=True)
+			# start the WSGI server
+			app.run(host=WSGI_IP, port=WSGI_PORT, debug=DEBUG_FLAG)
 		except KeyboardInterrupt:
 			print()
-		
-		'''
-		### http, production
-		try:
-			app.run(host=ip, port=port, debug=False)
-		except KeyboardInterrupt:
-			print()
-		'''
-		
-		'''
-		### https, production, requires privkey password on commandline
-		certfile = 'haael.net.crt' # certfile with privkey
-		password = sys.argv[1] # privkey password
-		
-		context = ssl.SSLContext()
-		context.load_cert_chain(certfile=certfile, password=password)
-		server = pywsgi.WSGIServer((ip, port), app, handler_class=WebSocketHandler, ssl_context=context)
-		
-		try:
-			server.serve_forever()
-		except KeyboardInterrupt:
-			print()
-		'''
+
 
