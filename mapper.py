@@ -31,10 +31,11 @@ WSGI_IP = '127.0.0.1'
 REQUIRED_SOLC_VERSION = '0.5.16' # solc version required by the contract source and openzeppelin headers
 PROVIDER_URLS = ['https://mainnet.infura.io/v3/11ed32ed8b7947498852e4195a4495b2'] # list of Eth RPC nodes (may be more than 1)
 WDGLD_CONTRACT_ADDRESS = Web3.toChecksumAddress('0x123151402076fc819b7564510989e475c9cd93ca') # wDGLD contract address
-ETHBRIDGE_DGLD_ADDRESS = 'gDxdzHvfK2a9ARMQQASJqCQ9K47SNUeiot' # Ethbridge DGLD address
+ETHBRIDGE_DGLD_ADDRESS = 'GYCkMfvPea7A3uftYaBzYqvHYfv4mcx8M9' # Ethbridge DGLD address
+ETHBRIDGE_CHANGE_ADDRESS = 'GT2hm7G7HpyVBx5qBjaXuVDUcG6EPQtCu7'
 ASSET_MAP_URL = 'https://s3.eu-west-1.amazonaws.com/gtsa-mapping/map.json' # static asset->bar map URL
 UTXOS_API_URL_TEMPLATE = 'https://explorer.dgld.ch/api/address/utxos/%s' # DGLD explorer URL template to get utxo list
-REQUEST_TIMEOUT = 4 # default timeout (seconds) for all http requests
+REQUEST_TIMEOUT = 8 # default timeout (seconds) for all http requests
 
 w3 = None
 wdgld_contract_interface = None
@@ -79,7 +80,6 @@ def get_contract():
 	global wdgld_contract
 	# request contract
 	wdgld_contract = w3.eth.contract(address=WDGLD_CONTRACT_ADDRESS, abi=wdgld_contract_interface['abi'])
-	
 	#assert wdgld_contract.functions.name().call() == 'wrapped-DGLD', "Sanity check failed: The requested contract name is not 'wrapped-DGLD'."
 
 
@@ -90,27 +90,27 @@ def reset_balances():
 	balances = defaultdict(lambda: 0)
 
 
-def update_balances(blocks_at_once=300000):
+def update_balances(blocks_at_once=200000):
 	global balances, balances_block, wdgld_total_supply
 	
 	wdgld_total_supply = wdgld_contract.functions.totalSupply().call()
-	
+
 	# get transfer list
 	to_block = min(w3.eth.blockNumber, balances_block + blocks_at_once)
+	print("From block: "+str(balances_block)+ " To block: "+str(to_block))
 	transfers = wdgld_contract.events.Transfer.getLogs(fromBlock=balances_block, toBlock=to_block)
 	balances_block = to_block
 	
+	print("Issued total: "+str(round(wdgld_total_supply*0.00000001,8)))
+
 	# calculate balances from transfers
 	for transfer in transfers:
 		from_address = transfer['args']['from']
 		to_address = transfer['args']['to']
 		value = transfer['args']['value']
 		#print(from_address, to_address, value)
-		balances[from_address] -= value
-		balances[to_address] += value
-		
-		assert wdgld_total_supply >= -balances[ISSUE_ADDRESS], "Sanity check failed: Total coin supply doesn't match the value derived from transfer listing."
-
+		balances[from_address] = round((balances[from_address]-value)*0.00000001,8)
+		balances[to_address] = round((balances[to_address]+value)*0.00000001,8)
 
 def synchronized():
 	return w3 and w3.isConnected()
@@ -184,8 +184,6 @@ def download_asset_map():
 	
 	return asset_map_new
 
-
-
 class InvalidResponse(Exception):
 	def __init__(self, status_code):
 		super().__init__("Bad status code in server response")
@@ -212,18 +210,37 @@ def download_utxos(url):
 	return utxos
 
 
-
-def download_locked_assets(dgld_address):
+def download_locked_assets(dgld_address,change_address):
 	url = UTXOS_API_URL_TEMPLATE % dgld_address
 	utxos = download_utxos(url)
 	
 	assets = {}
-	
+	tol = 0
 	for utxo in utxos['addrTxs']:
 		asset = utxo['asset']
 		value = utxo['value']
-		assets[asset] = value
-	
+		tol += value
+		if asset in assets:
+			assets[asset] += value
+		else:
+			assets[asset] = value
+		assets[asset] = round(assets[asset],8)
+
+	url = UTXOS_API_URL_TEMPLATE % change_address
+	utxos = download_utxos(url)
+
+	for utxo in utxos['addrTxs']:
+		asset = utxo['asset']
+		value = utxo['value']
+		tol += value
+		if asset in assets:
+			assets[asset] += value
+		else:
+			assets[asset] = value
+		assets[asset] = round(assets[asset],8)
+
+	print("Locked total: "+str(round(tol,8)))
+
 	return assets
 
 
@@ -342,7 +359,7 @@ def eth_asset(eth):
 		return json.dumps({'eth':eth, 'assets':[]}), 200, mime_json
 
 
-@app.route('/eth-bar/<eth>')
+@app.route('/eth-bar/<eth>', methods=['GET', 'POST'])
 def eth_bar(eth):
 	"eth->asset->bar"
 	
@@ -440,7 +457,7 @@ def eth_balances_updater(eth_balances):
 				reset_balances()
 				
 				while synchronized():
-					print("update balances", w3.eth.blockNumber - balances_block)
+					print("update balances " + str(w3.eth.blockNumber) + " " +str(balances_block))
 					update_balances()
 					
 					if w3.eth.blockNumber <= balances_block + 6:
@@ -467,7 +484,7 @@ def locked_assets_updater(locked_assets):
 		while True:
 			try:
 				print("downloading locked assets")
-				assets = download_locked_assets(ETHBRIDGE_DGLD_ADDRESS)
+				assets = download_locked_assets(ETHBRIDGE_DGLD_ADDRESS,ETHBRIDGE_CHANGE_ADDRESS)
 			except (Timeout, InvalidResponse, ValueError) as error:
 				print("error downloading assets locked in ethbridge", error)
 			else:
@@ -483,6 +500,7 @@ def locked_assets_updater(locked_assets):
 
 if __name__ == '__main__':
 	from multiprocessing import Process, Manager
+	from waitress import serve
 	
 	with Manager() as manager:
 		# proxy objects to share state between processes
@@ -501,7 +519,7 @@ if __name__ == '__main__':
 		
 		try:
 			# start the WSGI server
-			app.run(host=WSGI_IP, port=WSGI_PORT, debug=DEBUG_FLAG)
+			serve(app,host=WSGI_IP, port=WSGI_PORT)
 		except KeyboardInterrupt:
 			print()
 
