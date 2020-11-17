@@ -9,6 +9,7 @@ Python 3, Flask, Web3.py, SolcX
 
 ```
 pip3 install flask
+pip3 install waitress
 pip3 install web3
 pip3 install py-solc-x
 ```
@@ -137,10 +138,6 @@ CSS stylesheet used by the `index.html` file.
 
 * `client.py`
 Client-side Python script, included by `index.html`. Interpreted in the browser by Brython.
-
-* `brython.js`, `brython_stdlib.js`
-Python implementation in Javascript. Must be served from the same address as `index.html` due to browsers' security
-policy. This may be changed using CORS header.
 
 
 
